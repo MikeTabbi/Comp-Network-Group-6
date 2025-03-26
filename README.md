@@ -17,3 +17,5 @@ In simpler terms, it helps a device say "I'm here" and find out who else is pres
 2. Run the server:
    ```bash
    python server.py
+In a new terminal, run the client:
+python device.py
