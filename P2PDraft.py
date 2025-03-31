@@ -3,12 +3,22 @@ import threading  # Allows multiple clients to be served concurrently
 import os  # Manages file operations
 import datetime  # Adds timestamps to logs
 import json
+import signal
+import sys
+from inspect import signature
+from config import KEYS_DIR, TRUSTED_KEYS_DIR
+from cryptography.hazmat.primitives import serialization
+from Authentication import PeerAuthenticator
+
 
 HOST = '0.0.0.0'  # Listen on all network interfaces
-PORT = 5001       # Port for file transfer
-NOTIFY_PORT = 5002  # Port for sending notifications
+PORT = 5005     # Port for file transfer
+NOTIFY_PORT = 5006  # Port for sending notifications
 BUFFER_SIZE = 4096  # Amount of data read at once when sending/receiving files
 
+
+# Security Configuration
+CHALLENGE_SIZE = 32
 # Directory to store shared files
 FILE_DIR = "shared_files"
 LOG_FILE = "sync_log.txt"  # Log file to track file changes
@@ -30,7 +40,8 @@ def log_event(peer, filename, action):
 
 def notify_peers(filename, action):
     """Sends a notification to all registered peers about a file update."""
-    notification = json.dumps({"filename": filename, "action": action})
+    timestamp = datetime.datetime.now().isoformat()
+    notification = json.dumps({"filename": filename, "action": action, "timestamp": timestamp})
 
     for peer_ip in list(connected_peers):  # Iterate over connected peers
         try:
@@ -42,10 +53,31 @@ def notify_peers(filename, action):
             print(f"[-] Failed to notify {peer_ip}, removing from peer list.")
             connected_peers.remove(peer_ip)  # Remove unreachable peers
 
-def handle_client(conn, addr):
+def handle_client(conn, addr, authenticator):
     """Handles incoming file requests from peers."""
     print(f"[+] Connection from {addr}")
     try:
+        peer_id = conn.recv(BUFFER_SIZE).decode()
+        pubkey_path = os.path.join(TRUSTED_KEYS_DIR, f"{peer_id}_pub.pem")
+        if not os.path.exists(pubkey_path):
+            conn.send(b'AUTH_FAILED')
+            print(f"[-] Unknown peer: {peer_id}")
+            return
+        challenge = os.urandom(CHALLENGE_SIZE).hex()
+        conn.send(challenge.encode())
+
+        signature = conn.recv(BUFFER_SIZE).decode()
+        if not authenticator.verify(peer_id, challenge, signature):
+            conn.send(b'AUTH_FAILED')
+            print(f"[-] Authentication failed for {peer_id}@{addr}")
+            log_event(addr[0], "AUTH", "FAILED")
+            return
+
+        conn.send(b'AUTH_SUCCESS')
+        print(f"[+] Authenticated {peer_id}@{addr}")
+        log_event(addr[0], "AUTH", "SUCCESS")
+        connected_peers.add(addr[0])
+
         filename = conn.recv(BUFFER_SIZE).decode()  # Receives the filename requested
         filepath = os.path.join(FILE_DIR, filename)  # Constructs the full file path
 
@@ -66,7 +98,7 @@ def handle_client(conn, addr):
     finally:
         conn.close()
 
-def start_server():
+def start_server(authenticator):
     """Starts the peer in server mode to listen for file requests."""
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.bind((HOST, PORT))
@@ -75,7 +107,7 @@ def start_server():
 
     while True:
         conn, addr = server.accept()
-        thread = threading.Thread(target=handle_client, args=(conn, addr))
+        thread = threading.Thread(target=handle_client, args=(conn, addr, authenticator))
         thread.start()
 
 def start_notification_listener():
@@ -101,18 +133,34 @@ def handle_notifications(conn, addr):
     finally:
         conn.close()
 
-def request_file(peer_ip, filename):
+def request_file(authenticator, peer_ip, peer_id, filename):
     """Requests a file from another peer."""
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         client.connect((peer_ip, PORT))
+
+        # Authentication
+        client.send(peer_id.encode())
+        challenge = client.recv(BUFFER_SIZE).decode()
+        signature = authenticator.sign(challenge)
+        client.send(signature.encode())
+
+        auth_response = client.recv(BUFFER_SIZE)
+        if auth_response != b'AUTH_SUCCESS':
+            print("Authentication failed")
+            return
+
+
         client.send(filename.encode())
 
         response = client.recv(BUFFER_SIZE)
         if response == b'OK':
             filepath = os.path.join(FILE_DIR, filename)
-            with open(filepath, 'wb') as f:
-                while chunk := client.recv(BUFFER_SIZE):
+            with (open(filepath, 'wb') as f):
+                while True:
+                    chunk = client.recv(BUFFER_SIZE)
+                    if not chunk:
+                        break
                     f.write(chunk)
             print(f"[+] File '{filename}' downloaded successfully.")
             log_event(peer_ip, filename, "RECEIVED")
@@ -127,42 +175,95 @@ def request_file(peer_ip, filename):
 
 def track_file_changes():
     """Monitors file changes (creation, modification, deletion)."""
-    existing_files = set(os.listdir(FILE_DIR))
+    existing_files = {}
+
+    # Initialize with file modification times
+    for file in os.listdir(FILE_DIR):
+        filepath = os.path.join(FILE_DIR, file)
+        if os.path.isfile(filepath):
+            existing_files[file] = os.path.getmtime(filepath)
 
     while True:
         current_files = set(os.listdir(FILE_DIR))
 
         # Detect new files
-        for file in current_files - existing_files:
-            log_event("LOCAL", file, "CREATED")
+        for file in current_files - existing_files.keys():
+            filepath = os.path.join(FILE_DIR, file)
+            if os.path.isfile(filepath):
+                existing_files[file] = os.path.getmtime(filepath)
+                log_event("LOCAL", file, "CREATED")
 
         # Detect deleted files
-        for file in existing_files - current_files:
+        for file in set(existing_files.keys()) - current_files:
             log_event("LOCAL", file, "DELETED")
+            existing_files.pop(file, None)
 
         # Detect modifications
-        for file in current_files & existing_files:
-            file_path = os.path.join(FILE_DIR, file)
-            if os.path.isfile(file_path):
-                last_modified = os.path.getmtime(file_path)
-                with open(LOG_FILE, "r") as log:
-                    if f"MODIFIED | {file}" not in log.read():
-                        log_event("LOCAL", file, "MODIFIED")
+        for file in current_files & existing_files.keys():
+            filepath = os.path.join(FILE_DIR, file)
+            if os.path.isfile(filepath):
+                current_mtime = os.path.getmtime(filepath)
+                if current_mtime != existing_files[file]:  # Only log if changed
+                    existing_files[file] = current_mtime
+                    log_event("LOCAL", file, "MODIFIED")
 
-        existing_files = current_files  # Update existing files list
         threading.Event().wait(5)  # Check every 5 seconds
 
+
+
+def trust_peer(peer_id, key_filename):
+    """Adds a peer's public key to the trusted keys directory."""
+    key_path = os.path.join(KEYS_DIR, key_filename)
+    trusted_key_path = os.path.join(TRUSTED_KEYS_DIR, f"{peer_id}_pub.pem")
+
+    if not os.path.exists(key_path):
+        print(f"[-] Error: Key file '{key_filename}' not found in {KEYS_DIR}.")
+        return
+
+    try:
+        with open(key_path, "rb") as key_file:
+            public_key = key_file.read()
+
+        with open(trusted_key_path, "wb") as trusted_key_file:
+            trusted_key_file.write(public_key)
+
+        print(f"[+] Trusted peer '{peer_id}'. Key saved as {trusted_key_path}.")
+    except Exception as e:
+        print(f"[-] Error trusting peer: {e}")
+
 if __name__ == "__main__":
+
+    peer_id = input("Enter your peer ID: ").strip()
+
+    # Ensure necessary directories exist
+    os.makedirs(KEYS_DIR, exist_ok=True)
+    os.makedirs(TRUSTED_KEYS_DIR, exist_ok=True)
+
+    # Initialize authenticator
+    authenticator = PeerAuthenticator(peer_id)
+
     # Start server thread
-    threading.Thread(target=start_server, daemon=True).start()
+    threading.Thread(target=start_server, args=(authenticator,), daemon=True).start()
 
     # Start file tracking thread
     threading.Thread(target=track_file_changes, daemon=True).start()
 
+    threading.Thread(target=start_notification_listener, daemon=True).start()
+
     while True:
-        command = input("Enter command (get <peer_ip> <filename>): ").strip()
+        command = input("Enter command (get <peer_ip> <peer_id> <filename>): ").strip()
         if command.startswith("get"):
-            _, peer_ip, filename = command.split()
-            request_file(peer_ip, filename)
+            try:
+                _, peer_ip, remote_peer_id, filename = command.split()
+                request_file(authenticator, peer_ip, remote_peer_id, filename)
+            except ValueError:
+                print("Invalid format. Use: get <peer_ip> <peer_id> <filename>")
+        elif command.startswith("trust"):
+            try:
+                _, peer_id, key_filename = command.split()
+                trust_peer(peer_id, key_filename)
+            except ValueError:
+                print("Invalid format. Use: trust <peer_id> <key_filename>")
         else:
-            print("Invalid command. Use: get <peer_ip> <filename>")
+            print("Commands:")
+            print("  get <peer_ip> <peer_id> <filename> - Download file")
