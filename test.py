@@ -131,14 +131,11 @@ def handle_notifications(conn, addr):
     finally:
         conn.close()
 
-
 def request_file(authenticator, peer_ip, peer_id, filename):
     """Requests a file from another peer."""
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
-        print(f"[*] Attempting to connect to {peer_ip}:{PORT}...")
         client.connect((peer_ip, PORT))
-        print("[+] Connected to peer.")
 
         # Authentication
         client.send(peer_id.encode())
@@ -148,14 +145,16 @@ def request_file(authenticator, peer_ip, peer_id, filename):
 
         auth_response = client.recv(BUFFER_SIZE)
         if auth_response != b'AUTH_SUCCESS':
-            print("[-] Authentication failed")
+            print("Authentication failed")
             return
 
+
         client.send(filename.encode())
+
         response = client.recv(BUFFER_SIZE)
         if response == b'OK':
             filepath = os.path.join(FILE_DIR, filename)
-            with open(filepath, 'wb') as f:
+            with (open(filepath, 'wb') as f):
                 while True:
                     chunk = client.recv(BUFFER_SIZE)
                     if not chunk:
@@ -166,8 +165,6 @@ def request_file(authenticator, peer_ip, peer_id, filename):
         else:
             print("[-] File not found on the peer.")
             log_event(peer_ip, filename, "NOT_FOUND")
-    except ConnectionRefusedError:
-        print(f"[-] Connection refused by {peer_ip}:{PORT}. Is the peer running?")
     except Exception as e:
         print(f"[-] Error: {e}")
         log_event(peer_ip, filename, f"ERROR: {e}")
