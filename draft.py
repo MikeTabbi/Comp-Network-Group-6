@@ -11,6 +11,11 @@ FILE_DIR = "shared_files"
 os.makedirs(FILE_DIR, exist_ok=True)
 
 
+def handle_error(message, exception):
+    """Prints a standardized error message."""
+    print(f"[-] {message}: {exception}")
+
+
 def handle_client(conn, addr):
     """Handles incoming file requests from peers."""
     print(f"[+] Connection from {addr}")
@@ -28,36 +33,25 @@ def handle_client(conn, addr):
             conn.send(b'NOT_FOUND')
             print(f"[-] File '{filename}' not found")
     except Exception as e:
-        print(f"[-] Error: {e}")
+        handle_error("Client Handling Error", e)
     finally:
         conn.close()
 
 
 def start_server():
     """Starts the peer in server mode to listen for file requests."""
-
-    #Including User Story 1, Error Handling
-    try:  # error handling
-
-        # Creating a socket
+    try:
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        # Binding the socket
         server.bind((HOST, PORT))
-        # Listening for a connection w/ backlog 5
         server.listen(5)
-        # Message displaying that it's listening
         print(f"[*] Listening on {HOST}:{PORT}...")
 
-        # Loop to allow multiple connections
         while True:
             conn, addr = server.accept()
-            # Creating a new thread for the connection and allowing multiple connections
             thread = threading.Thread(target=handle_client, args=(conn, addr))
-            # Thread start
             thread.start()
-    # Errors from try block
     except Exception as e:
-        print(f"[-] Server Error: {e}")
+        handle_error("Server Error", e)
     finally:
         server.close()
 
@@ -74,12 +68,14 @@ def request_file(peer_ip, filename):
             filepath = os.path.join(FILE_DIR, filename)
             with open(filepath, 'wb') as f:
                 while chunk := client.recv(BUFFER_SIZE):
+                    if not chunk:
+                        break
                     f.write(chunk)
             print(f"[+] File '{filename}' downloaded successfully.")
         else:
             print("[-] File not found on the peer.")
     except Exception as e:
-        print(f"[-] Error: {e}")
+        handle_error("File Request Error", e)
     finally:
         client.close()
 
@@ -91,7 +87,10 @@ if __name__ == "__main__":
     while True:
         command = input("Enter command (get <peer_ip> <filename>): ").strip()
         if command.startswith("get"):
-            _, peer_ip, filename = command.split()
-            request_file(peer_ip, filename)
+            try:
+                _, peer_ip, filename = command.split()
+                request_file(peer_ip, filename)
+            except ValueError:
+                print("[-] Invalid command format. Use: get <peer_ip> <filename>")
         else:
             print("Invalid command. Use: get <peer_ip> <filename>")

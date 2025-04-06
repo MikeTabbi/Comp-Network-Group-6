@@ -1,0 +1,3 @@
+2025-04-06 08:24:16 | 127.0.0.1 | test.txt | SENT
+2025-04-06 08:24:16 | 127.0.0.1 | test.txt | RECEIVED
+2025-04-06 08:24:16 | LOCAL | test.txt | MODIFIED
