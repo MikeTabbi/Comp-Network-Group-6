@@ -13,6 +13,8 @@ class PeerAuthenticator:
         self.peer_id = peer_id
         self.private_key, self.public_key = self._load_or_generate_keys()
 
+        # DEBUG: Print this peer's public key
+        print(f"[DEBUG] {self.peer_id}'s Public Key:\n{self.public_key.public_bytes(encoding=serialization.Encoding.PEM,format=serialization.PublicFormat.SubjectPublicKeyInfo).decode()}")
     def _load_or_generate_keys(self):
         os.makedirs(KEYS_DIR, exist_ok=True)
         priv_path = os.path.join(KEYS_DIR, f"{self.peer_id}_priv.pem")
@@ -47,8 +49,11 @@ class PeerAuthenticator:
             f.write(key_bytes)
 
     def sign(self, message):
+        # Ensure consistent UTF-8 encoding
+        message_bytes = message.encode('utf-8')  # Explicit encoding
+
         signature = self.private_key.sign(
-            message.encode(),
+            message_bytes,  # Use the encoded bytes
             padding.PSS(
                 mgf=padding.MGF1(hashes.SHA256()),
                 salt_length=padding.PSS.MAX_LENGTH
@@ -59,24 +64,36 @@ class PeerAuthenticator:
 
     def verify(self, peer_id, message, signature):
         pubkey_path = os.path.join(TRUSTED_KEYS_DIR, f"{peer_id}_pub.pem")
+        print(f"[AUTH] Looking for {peer_id}'s key at: {pubkey_path}")
+    
         if not os.path.exists(pubkey_path):
+            print(f"[AUTH] Key not found!")  # Debug
             return False
-
+    
         with open(pubkey_path, "rb") as f:
-            public_key = serialization.load_pem_public_key(f.read())
-
+            key_data = f.read()  # Read ONCE and store
+            print(f"[AUTH] Key content:\n{key_data.decode()}")  # Debug print
+            
+            try:
+                public_key = serialization.load_pem_public_key(key_data)
+            except ValueError as e:
+                print(f"[AUTH] Invalid key format: {e}")  # Debug
+                return False
+    
         try:
             public_key.verify(
                 base64.b64decode(signature),
-                message.encode(),
+                message.encode('utf-8'),
                 padding.PSS(
                     mgf=padding.MGF1(hashes.SHA256()),
-                    salt_length=padding.PSS.MAX_LENGTH
-                ),
-                hashes.SHA256()
-            )
+                    salt_length=padding.PSS.MAX_LENGTH), hashes.SHA256())
+            print(f"[AUTH] Verification SUCCESS")  # Debug
             return True
         except InvalidSignature:
+            print(f"[AUTH] Invalid signature!")  # Debug
+            return False
+        except Exception as e:
+            print(f"[AUTH] Verification error: {e}")  # Debug
             return False
 
     def add_trusted_peer(self, peer_id, pubkey_bytes):

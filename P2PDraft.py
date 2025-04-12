@@ -10,8 +10,8 @@ from Authentication import PeerAuthenticator
 
 
 HOST = '0.0.0.0'  # Listen on all network interfaces
-PORT = 8080    # Port for file transfer
-NOTIFY_PORT = 5005  # Port for sending notifications
+PORT = 50019   # Port for file transfer
+NOTIFY_PORT = 5020 # Port for sending notifications
 BUFFER_SIZE = 4096  # Amount of data read at once when sending/receiving files
 
 
@@ -62,7 +62,7 @@ def handle_client(conn, addr, authenticator):
             print(f"[-] Unknown peer: {peer_id}")
             return
         challenge = os.urandom(CHALLENGE_SIZE).hex()
-        conn.send(challenge.encode())
+        conn.send(challenge.encode('utf-8'))
 
         signature = conn.recv(BUFFER_SIZE).decode()
         if not authenticator.verify(peer_id, challenge, signature):
@@ -141,10 +141,13 @@ def request_file(authenticator, peer_ip, peer_id, filename):
         print("[+] Connected to peer.")
 
         # Authentication
-        client.send(peer_id.encode())
-        challenge = client.recv(BUFFER_SIZE).decode()
+        client.send(authenticator.peer_id.encode())
+        challenge = client.recv(BUFFER_SIZE).decode('utf-8')
+        print(f"[CLIENT] Challenge: {challenge}")
         signature = authenticator.sign(challenge)
-        client.send(signature.encode())
+        print(f"[CLIENT] Signature: {signature}")
+
+        client.send(signature.encode('utf-8'))
 
         auth_response = client.recv(BUFFER_SIZE)
         if auth_response != b'AUTH_SUCCESS':
