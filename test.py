@@ -10,8 +10,8 @@ from Authentication import PeerAuthenticator
 
 
 HOST = '0.0.0.0'  # Listen on all network interfaces
-PORT = 5001   # Port for file transfer
-NOTIFY_PORT = 5002 # Port for sending notifications
+PORT = 8080    # Port for file transfer
+NOTIFY_PORT = 5005  # Port for sending notifications
 BUFFER_SIZE = 4096  # Amount of data read at once when sending/receiving files
 
 
@@ -62,7 +62,7 @@ def handle_client(conn, addr, authenticator):
             print(f"[-] Unknown peer: {peer_id}")
             return
         challenge = os.urandom(CHALLENGE_SIZE).hex()
-        conn.send(challenge.encode('utf-8'))
+        conn.send(challenge.encode())
 
         signature = conn.recv(BUFFER_SIZE).decode()
         if not authenticator.verify(peer_id, challenge, signature):
@@ -131,34 +131,30 @@ def handle_notifications(conn, addr):
     finally:
         conn.close()
 
-
 def request_file(authenticator, peer_ip, peer_id, filename):
     """Requests a file from another peer."""
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
-        print(f"[*] Attempting to connect to {peer_ip}:{PORT}...")
         client.connect((peer_ip, PORT))
-        print("[+] Connected to peer.")
 
         # Authentication
-        client.send(authenticator.peer_id.encode())
-        challenge = client.recv(BUFFER_SIZE).decode('utf-8')
-        print(f"[CLIENT] Challenge: {challenge}")
+        client.send(peer_id.encode())
+        challenge = client.recv(BUFFER_SIZE).decode()
         signature = authenticator.sign(challenge)
-        print(f"[CLIENT] Signature: {signature}")
-
-        client.send(signature.encode('utf-8'))
+        client.send(signature.encode())
 
         auth_response = client.recv(BUFFER_SIZE)
         if auth_response != b'AUTH_SUCCESS':
-            print("[-] Authentication failed")
+            print("Authentication failed")
             return
 
+
         client.send(filename.encode())
+
         response = client.recv(BUFFER_SIZE)
         if response == b'OK':
             filepath = os.path.join(FILE_DIR, filename)
-            with open(filepath, 'wb') as f:
+            with (open(filepath, 'wb') as f):
                 while True:
                     chunk = client.recv(BUFFER_SIZE)
                     if not chunk:
@@ -169,8 +165,6 @@ def request_file(authenticator, peer_ip, peer_id, filename):
         else:
             print("[-] File not found on the peer.")
             log_event(peer_ip, filename, "NOT_FOUND")
-    except ConnectionRefusedError:
-        print(f"[-] Connection refused by {peer_ip}:{PORT}. Is the peer running?")
     except Exception as e:
         print(f"[-] Error: {e}")
         log_event(peer_ip, filename, f"ERROR: {e}")
