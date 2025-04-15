@@ -10,8 +10,8 @@ from Authentication import PeerAuthenticator
 
 
 HOST = '0.0.0.0'  # Listen on all network interfaces
-PORT = 50019   # Port for file transfer
-NOTIFY_PORT = 5020 # Port for sending notifications
+PORT = 5001   # Port for file transfer
+NOTIFY_PORT = 5002 # Port for sending notifications
 BUFFER_SIZE = 4096  # Amount of data read at once when sending/receiving files
 
 
