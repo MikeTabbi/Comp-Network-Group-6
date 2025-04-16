@@ -96,3 +96,9 @@ Store peer data persistently (instead of just in memory)
 Build a UI or command-line interaction system
 
 Improve error handling and add real-time updates
+
+
+
+
+P2P FSM Diagram
+![FSM](p2p_fsm.png)
