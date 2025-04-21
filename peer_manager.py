@@ -1,72 +1,84 @@
 import threading
-from datetime import datetime
 import socket
-import netifaces
+from datetime import datetime, timedelta
+
 
 class PeerManager:
-    """Manages tracking of connected peers including their status and connection count."""
+    """Tracks connected peers with detailed info and health checks"""
 
     def __init__(self, local_peer_id=None):
-        self.peers = {}
-        self.local_peer_id = local_peer_id  # Store local peer ID
-        self.local_peer_ip = self.get_local_ip()  # Get current machine's IP
+        self.peers = {}  # {peer_id: {ip: str, last_seen: datetime, status: str}}
+        self.local_peer_id = local_peer_id
         self.lock = threading.Lock()
+        self.keepalive_interval = 300  # 5 minutes
+
+        # Start background cleaner
+        threading.Thread(target=self._cleanup_old_peers, daemon=True).start()
 
     def get_local_ip(self):
-    #Gets the local machine's IP address with fallback
+        """Get the LAN IP address of the current machine"""
         try:
-        # Method 1: UDP connection (original)
-            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
-                s.connect(("8.8.8.8", 80))
-                return s.getsockname()[0]
-        except:
-            try:
-            # Method 2: Hostname lookup
-                return socket.gethostbyname(socket.gethostname())
-            except:
-            # Method 3: Network interface detection
-                for interface in netifaces.interfaces():
-                    addrs = netifaces.ifaddresses(interface)
-                    if netifaces.AF_INET in addrs:
-                        for addr in addrs[netifaces.AF_INET]:
-                            if not addr['addr'].startswith('127.'):
-                                return addr['addr']
-                return "127.0.0.1"
-    def get_peers(self):
-        """Returns a copy of all peers including local"""
-        with self.lock:
-            all_peers = {pid: info.copy() for pid, info in self.peers.items()}
-            
-            # Add local peer entry
-            if self.local_peer_id:
-                all_peers[self.local_peer_id] = {
-                    'ip': self.local_peer_ip,
-                    'connection_count': 'N/A (Self)',
-                    'last_seen': 'N/A (Self)',
-                    'status': 'This Device'
-                }
-            return all_peers
-
-
+            # Connect to a dummy address to determine active interface
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.connect(("8.8.8.8", 80))  # Google DNS
+            local_ip = s.getsockname()[0]
+            s.close()
+            return local_ip
+        except Exception:
+            return "127.0.0.1"  # Fallback
     def add_peer(self, peer_id, ip):
-        """Adds or updates a peer's connection information."""
+        """Add/update a connected peer"""
         with self.lock:
-            if peer_id in self.peers:
-                self.peers[peer_id]['connection_count'] += 1
-                self.peers[peer_id]['last_seen'] = datetime.now()
-            else:
-                self.peers[peer_id] = {
-                    'ip': ip,
-                    'connection_count': 1,
-                    'last_seen': datetime.now()
-                }
+            self.peers[peer_id] = {
+                'ip': ip,
+                'last_seen': datetime.now(),
+                'status': 'Connected'
+            }
 
     def remove_peer(self, peer_id):
-        """Decrements connection count and removes peer if no active connections."""
+        """Remove a disconnected peer"""
+        with self.lock:
+            self.peers.pop(peer_id, None)
+
+    def update_last_seen(self, peer_id):
+        """Update last seen timestamp for keepalive"""
         with self.lock:
             if peer_id in self.peers:
-                self.peers[peer_id]['connection_count'] -= 1
-                if self.peers[peer_id]['connection_count'] <= 0:
-                    del self.peers[peer_id]
-                else:
-                    self.peers[peer_id]['last_seen'] = datetime.now()
+                self.peers[peer_id]['last_seen'] = datetime.now()
+
+    def _cleanup_old_peers(self):
+        """Background thread to remove stale peers"""
+        while True:
+            with self.lock:
+                now = datetime.now()
+                stale_peers = [
+                    peer_id for peer_id, info in self.peers.items()
+                    if now - info['last_seen'] > timedelta(seconds=self.keepalive_interval)
+                       and peer_id != self.local_peer_id
+                ]
+                for peer_id in stale_peers:
+                    self.peers[peer_id]['status'] = 'Disconnected'
+
+            threading.Event().wait(60)  # Check every minute
+
+    def get_peers(self):
+        """Get all peers including local with formatted data"""
+        with self.lock:
+            peers = self.peers.copy()
+
+            if self.local_peer_id:
+                peers[self.local_peer_id] = {
+                    'ip': self.get_local_ip(),  # <-- Use detected IP
+                    'last_seen': datetime.now(),
+                    'status': 'This Device'
+                }
+
+            return peers
+
+    def get_online_peers(self):
+        """Get only currently connected peers"""
+        with self.lock:
+            return {
+                peer_id: info for peer_id, info in self.peers.items()
+                if info['status'] == 'Connected' or peer_id == self.local_peer_id
+            }

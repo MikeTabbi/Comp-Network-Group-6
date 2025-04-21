@@ -3,16 +3,16 @@ import threading  # Allows multiple clients to be served concurrently
 import os  # Manages file operations
 import datetime  # Adds timestamps to logs
 import json
+from peer_manager import PeerManager
 from inspect import signature
 from config import KEYS_DIR, TRUSTED_KEYS_DIR
 from cryptography.hazmat.primitives import serialization
 from Authentication import PeerAuthenticator
-from peer_manager import PeerManager
 
 
 HOST = '0.0.0.0'  # Listen on all network interfaces
-PORT = 8080    # Port for file transfer
-NOTIFY_PORT = 5006  # Port for sending notifications
+PORT = 5001   # Port for file transfer
+NOTIFY_PORT = 5002 # Port for sending notifications
 BUFFER_SIZE = 4096  # Amount of data read at once when sending/receiving files
 
 
@@ -24,8 +24,7 @@ LOG_FILE = "sync_log.txt"  # Log file to track file changes
 os.makedirs(FILE_DIR, exist_ok=True)  # Prevents an error if the directory already exists
 
 # Set to store connected peers
-
-
+connected_peers = set()
 
 def log_event(peer, filename, action):
     """Logs file events with timestamps, peer IP, and action."""
@@ -56,8 +55,6 @@ def notify_peers(filename, action):
 def handle_client(conn, addr, authenticator):
     """Handles incoming file requests from peers."""
     print(f"[+] Connection from {addr}")
-    is_authenticated = False
-    peer_id = None
     try:
         peer_id = conn.recv(BUFFER_SIZE).decode()
         pubkey_path = os.path.join(TRUSTED_KEYS_DIR, f"{peer_id}_pub.pem")
@@ -66,14 +63,7 @@ def handle_client(conn, addr, authenticator):
             print(f"[-] Unknown peer: {peer_id}")
             return
         challenge = os.urandom(CHALLENGE_SIZE).hex()
-        conn.send(challenge.encode())
-
-        if authenticator.verify(peer_id, challenge, signature):
-            conn.send(b'AUTH_SUCCESS')
-            print(f"[+] Authenticated {peer_id}@{addr}")
-            is_authenticated = True
-            peer_manager.add_peer(peer_id, addr[0])  # Track authenticated peer
-            log_event(addr[0], "AUTH", "SUCCESS")
+        conn.send(challenge.encode('utf-8'))
 
         signature = conn.recv(BUFFER_SIZE).decode()
         if not authenticator.verify(peer_id, challenge, signature):
@@ -85,7 +75,8 @@ def handle_client(conn, addr, authenticator):
         conn.send(b'AUTH_SUCCESS')
         print(f"[+] Authenticated {peer_id}@{addr}")
         log_event(addr[0], "AUTH", "SUCCESS")
-        peer_manager.add_peer(peer_id, addr[0])
+        peer_manager.add_peer(peer_id, addr[0])  # <-- ADD THIS LINE
+        connected_peers.add(addr[0])
 
         filename = conn.recv(BUFFER_SIZE).decode()  # Receives the filename requested
         filepath = os.path.join(FILE_DIR, filename)  # Constructs the full file path
@@ -103,11 +94,8 @@ def handle_client(conn, addr, authenticator):
             log_event(addr[0], filename, "NOT_FOUND")
     except Exception as e:
         print(f"[-] Error: {e}")
-
         log_event(addr[0], "UNKNOWN", f"ERROR: {e}")
     finally:
-        if is_authenticated and peer_id:
-            peer_manager.remove_peer(peer_id)  # Remove peer when connection closes
         conn.close()
 
 def start_server(authenticator):
@@ -155,10 +143,13 @@ def request_file(authenticator, peer_ip, peer_id, filename):
         print("[+] Connected to peer.")
 
         # Authentication
-        client.send(peer_id.encode())
-        challenge = client.recv(BUFFER_SIZE).decode()
+        client.send(authenticator.peer_id.encode())
+        challenge = client.recv(BUFFER_SIZE).decode('utf-8')
+        print(f"[CLIENT] Challenge: {challenge}")
         signature = authenticator.sign(challenge)
-        client.send(signature.encode())
+        print(f"[CLIENT] Signature: {signature}")
+
+        client.send(signature.encode('utf-8'))
 
         auth_response = client.recv(BUFFER_SIZE)
         if auth_response != b'AUTH_SUCCESS':
@@ -249,7 +240,6 @@ def trust_peer(peer_id, key_filename):
 if __name__ == "__main__":
 
     peer_id = input("Enter your peer ID: ").strip()
-    peer_manager = PeerManager(local_peer_id=peer_id) 
 
     # Ensure necessary directories exist
     os.makedirs(KEYS_DIR, exist_ok=True)
@@ -257,7 +247,7 @@ if __name__ == "__main__":
 
     # Initialize authenticator
     authenticator = PeerAuthenticator(peer_id)
-    #authenticator._load_or_generate_keys() 
+    peer_manager = PeerManager(local_peer_id=peer_id)
 
     # Start server thread
     threading.Thread(target=start_server, args=(authenticator,), daemon=True).start()
@@ -275,34 +265,18 @@ if __name__ == "__main__":
                 request_file(authenticator, peer_ip, remote_peer_id, filename)
             except ValueError:
                 print("Invalid format. Use: get <peer_ip> <peer_id> <filename>")
-        elif command == "list-peers":
-            peers = peer_manager.get_peers()
-            if not peers:
-                print("No active peers connected.")
-            else:
-                print("\nCurrently connected peers:")
-                print(f"{'Peer ID':<15} | {'IP Address':<15} | {'Status':<15} | Last Activity")
-                print("-" * 60)
-                for pid, info in peers.items():
-                    # Handle different last_seen types
-                    last_seen = info.get('last_seen', 'N/A')
-                    
-                    if isinstance(last_seen, datetime.datetime):  # Use full module path
-                        last_seen_str = last_seen.strftime("%Y-%m-%d %H:%M:%S")
-                    else:
-                        last_seen_str = str(last_seen)
-                    
-                    status = 'Self' if pid == peer_id else 'Connected'
-                    print(f"{pid:<15} | {info['ip']:<15} | {status:<15} | {last_seen_str}")
-
         elif command.startswith("trust"):
             try:
                 _, peer_id, key_filename = command.split()
                 trust_peer(peer_id, key_filename)
             except ValueError:
                 print("Invalid format. Use: trust <peer_id> <key_filename>")
+        elif command == "list":
+            print("\n=== Connected Peers ===")
+            for peer_id, info in peer_manager.get_peers().items():
+                print(
+                    f"{peer_id} | {info['ip']} | {info['status']} | Last seen: {info['last_seen'].strftime('%Y-%m-%d %H:%M:%S')}")
+            print()
         else:
             print("Commands:")
             print("  get <peer_ip> <peer_id> <filename> - Download file")
-            print("  list-peers - Show connected peers")  # Add new command help
-            print("  trust <peer_id> <key_filename> - Trust a new peer")
