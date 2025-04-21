@@ -3,6 +3,7 @@ import threading  # Allows multiple clients to be served concurrently
 import os  # Manages file operations
 import datetime  # Adds timestamps to logs
 import json
+from peer_manager import PeerManager
 from inspect import signature
 from config import KEYS_DIR, TRUSTED_KEYS_DIR
 from cryptography.hazmat.primitives import serialization
@@ -74,6 +75,7 @@ def handle_client(conn, addr, authenticator):
         conn.send(b'AUTH_SUCCESS')
         print(f"[+] Authenticated {peer_id}@{addr}")
         log_event(addr[0], "AUTH", "SUCCESS")
+        peer_manager.add_peer(peer_id, addr[0])  # <-- ADD THIS LINE
         connected_peers.add(addr[0])
 
         filename = conn.recv(BUFFER_SIZE).decode()  # Receives the filename requested
@@ -245,6 +247,7 @@ if __name__ == "__main__":
 
     # Initialize authenticator
     authenticator = PeerAuthenticator(peer_id)
+    peer_manager = PeerManager(local_peer_id=peer_id)
 
     # Start server thread
     threading.Thread(target=start_server, args=(authenticator,), daemon=True).start()
@@ -268,6 +271,12 @@ if __name__ == "__main__":
                 trust_peer(peer_id, key_filename)
             except ValueError:
                 print("Invalid format. Use: trust <peer_id> <key_filename>")
+        elif command == "list":
+            print("\n=== Connected Peers ===")
+            for peer_id, info in peer_manager.get_peers().items():
+                print(
+                    f"{peer_id} | {info['ip']} | {info['status']} | Last seen: {info['last_seen'].strftime('%Y-%m-%d %H:%M:%S')}")
+            print()
         else:
             print("Commands:")
             print("  get <peer_ip> <peer_id> <filename> - Download file")
