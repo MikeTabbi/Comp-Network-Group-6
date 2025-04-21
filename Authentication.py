@@ -7,14 +7,12 @@ from cryptography.exceptions import InvalidSignature
 from config import KEYS_DIR, TRUSTED_KEYS_DIR
 
 
-
 class PeerAuthenticator:
     def __init__(self, peer_id):
         self.peer_id = peer_id
         self.private_key, self.public_key = self._load_or_generate_keys()
 
         # DEBUG: Print this peer's public key
-        print(f"[DEBUG] {self.peer_id}'s Public Key:\n{self.public_key.public_bytes(encoding=serialization.Encoding.PEM,format=serialization.PublicFormat.SubjectPublicKeyInfo).decode()}")
     def _load_or_generate_keys(self):
         os.makedirs(KEYS_DIR, exist_ok=True)
         priv_path = os.path.join(KEYS_DIR, f"{self.peer_id}_priv.pem")
