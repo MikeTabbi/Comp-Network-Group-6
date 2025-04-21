@@ -1,0 +1,6 @@
+2025-04-21 17:13:26 | LOCAL | terst.txt | CREATED
+2025-04-21 17:13:36 | LOCAL | terst.txt | MODIFIED
+2025-04-21 17:13:52 | 127.0.0.1 | AUTH | SUCCESS
+2025-04-21 17:13:52 | 127.0.0.1 | terst.txt | SENT_ENCRYPTED
+2025-04-21 17:13:52 | 127.0.0.1 | terst.txt | DECRYPT_ERROR: [Errno 2] No such file or directory: 'shared_files/temp_terst.txt.enc'
+2025-04-21 17:13:56 | LOCAL | terst.txt | DELETED
