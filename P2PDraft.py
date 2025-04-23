@@ -5,11 +5,10 @@ import datetime  # Adds timestamps to logs
 import json
 from encrypt_file import FileEncryptor
 from peer_manager import PeerManager
-from inspect import signature
 from config import KEYS_DIR, TRUSTED_KEYS_DIR
-from cryptography.hazmat.primitives import serialization
 from Authentication import PeerAuthenticator
-
+from account_manager import register_peer, authenticate_peer, peer_exists
+import getpass
 
 HOST = '0.0.0.0'  # Listen on all network interfaces
 PORT = 5001   # Port for file transfer
@@ -312,23 +311,43 @@ if __name__ == "__main__":
 
     peer_id = input("Enter your peer ID: ").strip()
 
-    # Ensure necessary directories exist
+    # 🔐 Check if peer exists
+    if peer_exists(peer_id):
+        print(f"🔐 Peer '{peer_id}' found. Please authenticate.")
+        password = getpass.getpass("Enter your password: ")
+        if authenticate_peer(peer_id, password):
+            print("✅ Authentication successful.")
+        else:
+            print("❌ Incorrect password. Exiting.")
+            exit(1)
+    else:
+        print(f"👤 New peer '{peer_id}' detected.")
+        password = getpass.getpass("Set your password: ")
+        confirm = getpass.getpass("Confirm your password: ")
+        if password != confirm:
+            print("❌ Passwords do not match. Exiting.")
+            exit(1)
+        if register_peer(peer_id, password):
+            print("✅ Peer registered successfully.")
+        else:
+            print("❌ Failed to register peer. Exiting.")
+            exit(1)
+
+    # 📁 Ensure necessary directories exist
     os.makedirs(KEYS_DIR, exist_ok=True)
     os.makedirs(TRUSTED_KEYS_DIR, exist_ok=True)
 
-    # Initialize authenticator
-    authenticator = PeerAuthenticator(peer_id)
+    # 🔐 Initialize components
+    authenticator = PeerAuthenticator(peer_id, password)
     peer_manager = PeerManager(local_peer_id=peer_id)
     encryptor = FileEncryptor()
 
-    # Start server thread
+    # 🚀 Start server and background threads
     threading.Thread(target=start_server, args=(authenticator,), daemon=True).start()
-
-    # Start file tracking thread
     threading.Thread(target=track_file_changes, daemon=True).start()
-
     threading.Thread(target=start_notification_listener, daemon=True).start()
 
+    # 🧭 Main loop
     while True:
         command = input("Enter command (get <peer_ip> <peer_id> <filename>): ").strip()
         if command.startswith("get"):
@@ -349,6 +368,10 @@ if __name__ == "__main__":
                 print(
                     f"{peer_id} | {info['ip']} | {info['status']} | Last seen: {info['last_seen'].strftime('%Y-%m-%d %H:%M:%S')}")
             print()
+        elif command == "exit" or command == "logout":
+            print("👋 Logging out and exiting...")
+            break
         else:
             print("Commands:")
             print("  get <peer_ip> <peer_id> <filename> - Download file")
+
