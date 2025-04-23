@@ -101,4 +101,4 @@ Improve error handling and add real-time updates
 
 
 P2P FSM Diagram
-![FSM](p2p_fsm.png)
+![FSM](P2P_State_Machine_Diagram.png)
