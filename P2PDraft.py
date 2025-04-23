@@ -1,35 +1,25 @@
-import socket  # Provides network communication capabilities
-import threading  # Allows multiple clients to be served concurrently
-import os  # Manages file operations
-import datetime  # Adds timestamps to logs
+import socket
+import threading
+import os
+import datetime
 import json
+import getpass
 from encrypt_file import FileEncryptor
 from peer_manager import PeerManager
 from config import KEYS_DIR, TRUSTED_KEYS_DIR
 from Authentication import PeerAuthenticator
-<<<<<<< HEAD
 from account_manager import register_peer, authenticate_peer, peer_exists
-import getpass
-
-HOST = '0.0.0.0'  # Listen on all network interfaces
-PORT = 5001   # Port for file transfer
-NOTIFY_PORT = 5002 # Port for sending notifications
-BUFFER_SIZE = 4096  # Amount of data read at once when sending/receiving files
-
-
-# Security Configuration
-=======
 from password_lock import set_password_for_file, unlock_file_with_password
 
 HOST = '0.0.0.0'
 PORT = 5001
 NOTIFY_PORT = 5002
 BUFFER_SIZE = 4096
->>>>>>> ef48a184f228994c7603f3c219b661435c2b1a58
 CHALLENGE_SIZE = 32
 FILE_DIR = "shared_files"
 LOG_FILE = "sync_log.txt"
 os.makedirs(FILE_DIR, exist_ok=True)
+
 connected_peers = set()
 
 def log_event(peer, filename, action):
@@ -237,9 +227,7 @@ def trust_peer(peer_id, key_filename):
 
 if __name__ == "__main__":
     peer_id = input("Enter your peer ID: ").strip()
-<<<<<<< HEAD
 
-    # 🔐 Check if peer exists
     if peer_exists(peer_id):
         print(f"🔐 Peer '{peer_id}' found. Please authenticate.")
         password = getpass.getpass("Enter your password: ")
@@ -261,33 +249,18 @@ if __name__ == "__main__":
             print("❌ Failed to register peer. Exiting.")
             exit(1)
 
-    # 📁 Ensure necessary directories exist
     os.makedirs(KEYS_DIR, exist_ok=True)
     os.makedirs(TRUSTED_KEYS_DIR, exist_ok=True)
-
-    # 🔐 Initialize components
     authenticator = PeerAuthenticator(peer_id, password)
     peer_manager = PeerManager(local_peer_id=peer_id)
     encryptor = FileEncryptor()
 
-    # 🚀 Start server and background threads
     threading.Thread(target=start_server, args=(authenticator,), daemon=True).start()
     threading.Thread(target=track_file_changes, daemon=True).start()
     threading.Thread(target=start_notification_listener, daemon=True).start()
 
-    # 🧭 Main loop
-=======
-    os.makedirs(KEYS_DIR, exist_ok=True)
-    os.makedirs(TRUSTED_KEYS_DIR, exist_ok=True)
-    authenticator = PeerAuthenticator(peer_id)
-    peer_manager = PeerManager(local_peer_id=peer_id)
-    encryptor = FileEncryptor()
-    threading.Thread(target=start_server, args=(authenticator,), daemon=True).start()
-    threading.Thread(target=track_file_changes, daemon=True).start()
-    threading.Thread(target=start_notification_listener, daemon=True).start()
->>>>>>> ef48a184f228994c7603f3c219b661435c2b1a58
     while True:
-        command = input("Enter command (get, trust, list, lock, unlock): ").strip()
+        command = input("Enter command (get, trust, list, lock, unlock, exit): ").strip()
         if command.startswith("get"):
             try:
                 _, peer_ip, remote_peer_id, filename = command.split()
@@ -305,15 +278,6 @@ if __name__ == "__main__":
             for peer_id, info in peer_manager.get_peers().items():
                 print(f"{peer_id} | {info['ip']} | {info['status']} | Last seen: {info['last_seen'].strftime('%Y-%m-%d %H:%M:%S')}")
             print()
-<<<<<<< HEAD
-        elif command == "exit" or command == "logout":
-            print("👋 Logging out and exiting...")
-            break
-        else:
-            print("Commands:")
-            print("  get <peer_ip> <peer_id> <filename> - Download file")
-
-=======
         elif command.startswith("lock"):
             try:
                 _, filename, password = command.split()
@@ -336,11 +300,14 @@ if __name__ == "__main__":
                 print("Usage: unlock <filename> <password>")
             except Exception as e:
                 print(f"[-] Unlock failed: {e}")
+        elif command == "exit" or command == "logout":
+            print("👋 Logging out and exiting...")
+            break
         else:
             print("Commands:")
-            print("  get <peer_ip> <peer_id> <filename> - Download file")
-            print("  trust <peer_id> <key_filename> - Trust a peer's key")
-            print("  list - Show connected peers")
-            print("  lock <filename> <password> - Lock a file with a password")
-            print("  unlock <filename> <password> - Unlock a password-protected file")
->>>>>>> ef48a184f228994c7603f3c219b661435c2b1a58
+            print("  get <peer_ip> <peer_id> <filename>")
+            print("  trust <peer_id> <key_filename>")
+            print("  list")
+            print("  lock <filename> <password>")
+            print("  unlock <filename> <password>")
+            print("  exit")
