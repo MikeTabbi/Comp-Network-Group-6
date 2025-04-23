@@ -13,3 +13,7 @@
 2025-04-22 21:37:56 | 127.0.0.1 | test.txt | DECRYPT_ERROR: [Errno 2] No such file or directory: 'shared_files/temp_test.txt.enc'
 2025-04-22 21:37:58 | LOCAL | test.txt | DELETED
 2025-04-23 00:38:13 | LOCAL | tt.txt | CREATED
+2025-04-23 17:54:56 | LOCAL | tt.txt | CREATED
+2025-04-23 17:54:56 | LOCAL | miles.txt | DELETED
+2025-04-23 17:54:56 | LOCAL | marwan.txt | DELETED
+2025-04-23 17:54:56 | LOCAL | test.txt | DELETED
