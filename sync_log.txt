@@ -1,3 +1,24 @@
+<<<<<<< HEAD
+2025-04-21 17:13:26 | LOCAL | terst.txt | CREATED
+2025-04-21 17:13:36 | LOCAL | terst.txt | MODIFIED
+2025-04-21 17:13:52 | 127.0.0.1 | AUTH | SUCCESS
+2025-04-21 17:13:52 | 127.0.0.1 | terst.txt | SENT_ENCRYPTED
+2025-04-21 17:13:52 | 127.0.0.1 | terst.txt | DECRYPT_ERROR: [Errno 2] No such file or directory: 'shared_files/temp_terst.txt.enc'
+2025-04-21 17:13:56 | LOCAL | terst.txt | DELETED
+2025-04-21 17:27:31 | 10.33.16.32 | test.txt | RECEIVED_DECRYPTED
+2025-04-21 17:27:33 | LOCAL | test.txt | CREATED
+2025-04-22 10:25:02 | 10.33.16.39 | test.txt | RECEIVED_DECRYPTED
+2025-04-22 10:25:07 | LOCAL | test.txt | MODIFIED
+2025-04-22 21:37:56 | 127.0.0.1 | AUTH | SUCCESS
+2025-04-22 21:37:56 | 127.0.0.1 | test.txt | SENT_ENCRYPTED
+2025-04-22 21:37:56 | 127.0.0.1 | test.txt | DECRYPT_ERROR: [Errno 2] No such file or directory: 'shared_files/temp_test.txt.enc'
+2025-04-22 21:37:58 | LOCAL | test.txt | DELETED
+2025-04-23 00:38:13 | LOCAL | tt.txt | CREATED
+2025-04-23 17:54:56 | LOCAL | tt.txt | CREATED
+2025-04-23 17:54:56 | LOCAL | miles.txt | DELETED
+2025-04-23 17:54:56 | LOCAL | marwan.txt | DELETED
+2025-04-23 17:54:56 | LOCAL | test.txt | DELETED
+=======
 2025-04-16 12:42:53 | LOCAL | test.txt | MODIFIED
 2025-04-16 12:42:58 | LOCAL | test.txt | MODIFIED
 2025-04-16 12:43:03 | LOCAL | test.txt | MODIFIED
@@ -36,3 +57,4 @@
 2025-04-23 17:57:35 | 127.0.0.1 | test.txt | SENT
 2025-04-23 17:57:35 | 127.0.0.1 | test.txt | RECEIVED
 2025-04-23 17:57:37 | LOCAL | test.txt | MODIFIED
+>>>>>>> main

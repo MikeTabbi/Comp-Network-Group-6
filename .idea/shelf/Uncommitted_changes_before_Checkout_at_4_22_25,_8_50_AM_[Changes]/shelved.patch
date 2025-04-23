@@ -1,0 +1,51 @@
+Index: .idea/workspace.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project version=\"4\">\n  <component name=\"AutoImportSettings\">\n    <option name=\"autoReloadType\" value=\"SELECTIVE\" />\n  </component>\n  <component name=\"ChangeListManager\">\n    <list default=\"true\" id=\"6139cd7a-4d53-40a8-bd44-be58c5d57807\" name=\"Changes\" comment=\"\" />\n    <option name=\"SHOW_DIALOG\" value=\"false\" />\n    <option name=\"HIGHLIGHT_CONFLICTS\" value=\"true\" />\n    <option name=\"HIGHLIGHT_NON_ACTIVE_CHANGELIST\" value=\"false\" />\n    <option name=\"LAST_RESOLUTION\" value=\"IGNORE\" />\n  </component>\n  <component name=\"FileTemplateManagerImpl\">\n    <option name=\"RECENT_TEMPLATES\">\n      <list>\n        <option value=\"Python Script\" />\n      </list>\n    </option>\n  </component>\n  <component name=\"Git.Settings\">\n    <option name=\"RECENT_BRANCH_BY_REPOSITORY\">\n      <map>\n        <entry key=\"$PROJECT_DIR$\" value=\"main\" />\n      </map>\n    </option>\n    <option name=\"RECENT_GIT_ROOT_PATH\" value=\"$PROJECT_DIR$\" />\n  </component>\n  <component name=\"ProjectColorInfo\">{\n  &quot;associatedIndex&quot;: 0\n}</component>\n  <component name=\"ProjectId\" id=\"2riecZ7yYo6V0egIlLsLzpipgTx\" />\n  <component name=\"ProjectViewState\">\n    <option name=\"hideEmptyMiddlePackages\" value=\"true\" />\n    <option name=\"showLibraryContents\" value=\"true\" />\n  </component>\n  <component name=\"PropertiesComponent\"><![CDATA[{\n  \"keyToString\": {\n    \"Python.test.executor\": \"Run\",\n    \"RunOnceActivity.ShowReadmeOnStart\": \"true\",\n    \"RunOnceActivity.git.unshallow\": \"true\",\n    \"git-widget-placeholder\": \"Mike\",\n    \"settings.editor.selected.configurable\": \"com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable\"\n  }\n}]]></component>\n  <component name=\"RunManager\">\n    <configuration name=\"test\" type=\"PythonConfigurationType\" factoryName=\"Python\" temporary=\"true\" nameIsGenerated=\"true\">\n      <module name=\"Comp-Network-Group-6\" />\n      <option name=\"ENV_FILES\" value=\"\" />\n      <option name=\"INTERPRETER_OPTIONS\" value=\"\" />\n      <option name=\"PARENT_ENVS\" value=\"true\" />\n      <envs>\n        <env name=\"PYTHONUNBUFFERED\" value=\"1\" />\n      </envs>\n      <option name=\"SDK_HOME\" value=\"\" />\n      <option name=\"WORKING_DIRECTORY\" value=\"$PROJECT_DIR$\" />\n      <option name=\"IS_MODULE_SDK\" value=\"true\" />\n      <option name=\"ADD_CONTENT_ROOTS\" value=\"true\" />\n      <option name=\"ADD_SOURCE_ROOTS\" value=\"true\" />\n      <option name=\"SCRIPT_NAME\" value=\"$PROJECT_DIR$/test.py\" />\n      <option name=\"PARAMETERS\" value=\"\" />\n      <option name=\"SHOW_COMMAND_LINE\" value=\"false\" />\n      <option name=\"EMULATE_TERMINAL\" value=\"false\" />\n      <option name=\"MODULE_MODE\" value=\"false\" />\n      <option name=\"REDIRECT_INPUT\" value=\"false\" />\n      <option name=\"INPUT_FILE\" value=\"\" />\n      <method v=\"2\" />\n    </configuration>\n    <recent_temporary>\n      <list>\n        <item itemvalue=\"Python.test\" />\n      </list>\n    </recent_temporary>\n  </component>\n  <component name=\"SharedIndexes\">\n    <attachedChunks>\n      <set>\n        <option value=\"bundled-python-sdk-495700d161d3-aa17d162503b-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-243.22562.220\" />\n      </set>\n    </attachedChunks>\n  </component>\n  <component name=\"SpellCheckerSettings\" RuntimeDictionaries=\"0\" Folders=\"0\" CustomDictionaries=\"0\" DefaultDictionary=\"application-level\" UseSingleDictionary=\"true\" transferred=\"true\" />\n  <component name=\"TaskManager\">\n    <task active=\"true\" id=\"Default\" summary=\"Default task\">\n      <changelist id=\"6139cd7a-4d53-40a8-bd44-be58c5d57807\" name=\"Changes\" comment=\"\" />\n      <created>1737046402732</created>\n      <option name=\"number\" value=\"Default\" />\n      <option name=\"presentableId\" value=\"Default\" />\n      <updated>1737046402732</updated>\n    </task>\n    <servers />\n  </component>\n  <component name=\"Vcs.Log.Tabs.Properties\">\n    <option name=\"TAB_STATES\">\n      <map>\n        <entry key=\"MAIN\">\n          <value>\n            <State>\n              <option name=\"FILTERS\">\n                <map>\n                  <entry key=\"branch\">\n                    <value>\n                      <list>\n                        <option value=\"Mike\" />\n                      </list>\n                    </value>\n                  </entry>\n                </map>\n              </option>\n            </State>\n          </value>\n        </entry>\n      </map>\n    </option>\n  </component>\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+--- a/.idea/workspace.xml	(revision 5c27f1f848cf13c5eb04d7d73dbf039919ca7530)
++++ b/.idea/workspace.xml	(date 1745326144153)
+@@ -38,7 +38,6 @@
+     "Python.test.executor": "Run",
+     "RunOnceActivity.ShowReadmeOnStart": "true",
+     "RunOnceActivity.git.unshallow": "true",
+-    "git-widget-placeholder": "Mike",
+     "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
+   }
+ }]]></component>
+Index: .idea/misc.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project version=\"4\">\n  <component name=\"Black\">\n    <option name=\"sdkName\" value=\"Python 3.9 (Comp-Network-Group-6)\" />\n  </component>\n  <component name=\"ProjectRootManager\" version=\"2\" project-jdk-name=\"Python 3.10\" project-jdk-type=\"Python SDK\" />\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/misc.xml b/.idea/misc.xml
+--- a/.idea/misc.xml	(revision 5c27f1f848cf13c5eb04d7d73dbf039919ca7530)
++++ b/.idea/misc.xml	(date 1745326127091)
+@@ -3,5 +3,5 @@
+   <component name="Black">
+     <option name="sdkName" value="Python 3.9 (Comp-Network-Group-6)" />
+   </component>
+-  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.10" project-jdk-type="Python SDK" />
++  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.9 (Comp-Network-Group-6)" project-jdk-type="Python SDK" />
+ </project>
+\ No newline at end of file
+Index: sync_log.txt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>2025-04-16 12:42:53 | LOCAL | test.txt | MODIFIED\n2025-04-16 12:42:58 | LOCAL | test.txt | MODIFIED\n2025-04-16 12:43:03 | LOCAL | test.txt | MODIFIED\n2025-04-16 12:43:08 | LOCAL | test.txt | MODIFIED\n2025-04-16 12:43:13 | LOCAL | test.txt | MODIFIED\n2025-04-16 12:43:18 | LOCAL | test.txt | MODIFIED\n2025-04-16 12:45:28 | LOCAL | test.txt | MODIFIED\n2025-04-16 12:45:33 | LOCAL | test.txt | MODIFIED\n2025-04-16 12:45:38 | LOCAL | test.txt | MODIFIED\n2025-04-16 12:45:44 | LOCAL | test.txt | MODIFIED\n2025-04-16 12:45:49 | LOCAL | test.txt | MODIFIED\n2025-04-16 12:52:48 | LOCAL | test.txt | MODIFIED\n2025-04-16 12:52:53 | LOCAL | test.txt | MODIFIED\n2025-04-16 12:52:58 | LOCAL | test.txt | MODIFIED\n2025-04-16 12:53:03 | LOCAL | test.txt | MODIFIED\n2025-04-16 12:54:38 | LOCAL | test.txt | MODIFIED\n2025-04-16 12:56:12 | LOCAL | test.txt | MODIFIED\n2025-04-16 13:02:35 | LOCAL | example1.txt | CREATED\n2025-04-16 13:03:05 | LOCAL | example1.txt | MODIFIED\n2025-04-16 13:03:15 | LOCAL | example1.txt | DELETED\n2025-04-16 13:04:45 | LOCAL | test.txt | MODIFIED\n2025-04-16 13:05:25 | LOCAL | test.txt | MODIFIED\n2025-04-16 13:08:15 | LOCAL | test.txt | MODIFIED\n2025-04-16 13:08:36 | LOCAL | test.txt | MODIFIED\n2025-04-16 13:09:20 | LOCAL | test.txt | MODIFIED\n2025-04-16 13:09:21 | LOCAL | test.txt | MODIFIED\n2025-04-16 13:13:45 | LOCAL | example1.txt | CREATED\n2025-04-16 13:13:46 | LOCAL | example1.txt | CREATED\n2025-04-16 13:14:12 | LOCAL | example1.txt | MODIFIED\n2025-04-16 13:14:12 | LOCAL | test.txt | MODIFIED\n2025-04-16 13:14:40 | LOCAL | test.txt | MODIFIED\n2025-04-16 13:14:40 | LOCAL | example1.txt | MODIFIED\n2025-04-16 14:33:35 | LOCAL | test.txt | MODIFIED\n2025-04-16 14:33:35 | LOCAL | example1.txt | MODIFIED\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/sync_log.txt b/sync_log.txt
+--- a/sync_log.txt	(revision 5c27f1f848cf13c5eb04d7d73dbf039919ca7530)
++++ b/sync_log.txt	(date 1745326095017)
+@@ -32,3 +32,4 @@
+ 2025-04-16 13:14:40 | LOCAL | example1.txt | MODIFIED
+ 2025-04-16 14:33:35 | LOCAL | test.txt | MODIFIED
+ 2025-04-16 14:33:35 | LOCAL | example1.txt | MODIFIED
++2025-04-22 08:48:15 | LOCAL | test.txt | MODIFIED

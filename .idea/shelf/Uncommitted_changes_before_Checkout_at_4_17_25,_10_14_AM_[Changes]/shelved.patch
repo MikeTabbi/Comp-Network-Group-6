@@ -1,0 +1,25 @@
+Index: peer_keys/Mike_pub.pem
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAo7xc67MZSrG9YnynOhFj\njIn22owpAWBPFRM9rx5PvdKYhWO81LUqe114FN4eAqK5+fMKpeAFuRh32rwTwjQY\nLfcHgb7BgVYKef9QmXFd84IcVWekrW0hkWdHM3uffPBUjUhKSQOiGLt9dDSQW0gf\n1a9jJEAXMZ3S6SYAIjHprOcQBlnDtR0GOSBaBagut4AtOFrQEyvJymhOP4yFXAHW\n2Ms07ZazWKcxQ5iB835iu96J70JtJW3zbqzZR8OlApvQK2DELp3L8rgYn+NMz8BY\nJmg9jLZfUsW5nzuXHBeOdlgAThIMw1cAAOWZRBbN728X74kjb/25UfgGcVGFVP5U\n7wIDAQAB\n-----END PUBLIC KEY-----\n
+===================================================================
+diff --git a/peer_keys/Mike_pub.pem b/peer_keys/Mike_pub.pem
+--- a/peer_keys/Mike_pub.pem	(revision 47323fa395c56083023d57a067cd74c370247906)
++++ b/peer_keys/Mike_pub.pem	(date 1744898620904)
+@@ -1,9 +1,9 @@
+ -----BEGIN PUBLIC KEY-----
+-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAo7xc67MZSrG9YnynOhFj
+-jIn22owpAWBPFRM9rx5PvdKYhWO81LUqe114FN4eAqK5+fMKpeAFuRh32rwTwjQY
+-LfcHgb7BgVYKef9QmXFd84IcVWekrW0hkWdHM3uffPBUjUhKSQOiGLt9dDSQW0gf
+-1a9jJEAXMZ3S6SYAIjHprOcQBlnDtR0GOSBaBagut4AtOFrQEyvJymhOP4yFXAHW
+-2Ms07ZazWKcxQ5iB835iu96J70JtJW3zbqzZR8OlApvQK2DELp3L8rgYn+NMz8BY
+-Jmg9jLZfUsW5nzuXHBeOdlgAThIMw1cAAOWZRBbN728X74kjb/25UfgGcVGFVP5U
+-7wIDAQAB
++MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzbTRoIG8QZc4ydPN4/nD
++y1Hag65b5LeKhHuCoD4tRMkSoK6Vq6WX6UCVoIdc/JXw6yE24VwMrvaU7WH84sU/
++5P29JrTQVUQd4CJ0e+6PclNb7I6mAtIQIymkvbdHUvn7Rlis4GyHRirJu0TvvBEY
++Ohemim8cuFdJMX+sCTBXmZ/Yk3nsP8hw3iMriXcy0r7wYbtzkw6G30GOSLqZynYY
++fU/5T8ueSjf8JvaSLs6d8XsKJc350r7140AGJbI4FtWzvtVQdD+0lg4hUcY4zJpZ
++3lWc5zggM0Tw+VEC/1TLMzMHHkwdVf/hRnaxXK9R69eh40Up0RVDwqcDYvd5vFuU
++DQIDAQAB
+ -----END PUBLIC KEY-----
