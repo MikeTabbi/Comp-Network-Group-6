@@ -8,3 +8,8 @@
 2025-04-21 17:27:11 | LOCAL | test.txt | MODIFIED
 2025-04-21 17:27:30 | 10.33.16.67 | AUTH | SUCCESS
 2025-04-21 17:27:31 | 10.33.16.67 | test.txt | SENT_ENCRYPTED
+2025-04-23 10:50:41 | LOCAL | test.txt | MODIFIED
+2025-04-23 12:54:12 | 10.31.18.85 | AUTH | SUCCESS
+2025-04-23 12:54:12 | 10.31.18.85 | test.txt | SENT_ENCRYPTED
+2025-04-23 12:54:12 | 10.31.18.85 | test.txt | DECRYPT_ERROR: [Errno 2] No such file or directory: 'shared_files/temp_test.txt.enc'
+2025-04-23 12:54:14 | LOCAL | test.txt | DELETED
