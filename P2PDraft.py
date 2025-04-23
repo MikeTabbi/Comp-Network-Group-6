@@ -21,6 +21,7 @@ LOG_FILE = "sync_log.txt"
 os.makedirs(FILE_DIR, exist_ok=True)
 
 connected_peers = set()
+last_mod_times = {}
 
 def log_event(peer, filename, action):
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -100,6 +101,7 @@ def handle_client(conn, addr, authenticator):
 
 def start_server(authenticator):
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server.bind((HOST, PORT))
     server.listen(5)
     print(f"[*] Listening on {HOST}:{PORT}...")
@@ -110,6 +112,7 @@ def start_server(authenticator):
 
 def start_notification_listener():
     notify_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    notify_server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     notify_server.bind((HOST, NOTIFY_PORT))
     notify_server.listen(5)
     print(f"[*] Listening for notifications on {HOST}:{NOTIFY_PORT}...")
@@ -182,7 +185,7 @@ def request_file(authenticator, peer_ip, peer_id, filename):
         log_event(peer_ip, filename, f"ERROR: {e}")
     finally:
         client.close()
-        if 'encrypted_temp' in locals() and os.path.exists(encrypted_temp):
+        if os.path.exists(encrypted_temp):
             os.remove(encrypted_temp)
 
 def track_file_changes():
@@ -231,11 +234,10 @@ if __name__ == "__main__":
     if peer_exists(peer_id):
         print(f"🔐 Peer '{peer_id}' found. Please authenticate.")
         password = getpass.getpass("Enter your password: ")
-        if authenticate_peer(peer_id, password):
-            print("✅ Authentication successful.")
-        else:
+        if not authenticate_peer(peer_id, password):
             print("❌ Incorrect password. Exiting.")
             exit(1)
+        print("✅ Authentication successful.")
     else:
         print(f"👤 New peer '{peer_id}' detected.")
         password = getpass.getpass("Set your password: ")
@@ -243,11 +245,10 @@ if __name__ == "__main__":
         if password != confirm:
             print("❌ Passwords do not match. Exiting.")
             exit(1)
-        if register_peer(peer_id, password):
-            print("✅ Peer registered successfully.")
-        else:
+        if not register_peer(peer_id, password):
             print("❌ Failed to register peer. Exiting.")
             exit(1)
+        print("✅ Peer registered successfully.")
 
     os.makedirs(KEYS_DIR, exist_ok=True)
     os.makedirs(TRUSTED_KEYS_DIR, exist_ok=True)
@@ -256,8 +257,8 @@ if __name__ == "__main__":
     encryptor = FileEncryptor()
 
     threading.Thread(target=start_server, args=(authenticator,), daemon=True).start()
-    threading.Thread(target=track_file_changes, daemon=True).start()
     threading.Thread(target=start_notification_listener, daemon=True).start()
+    threading.Thread(target=track_file_changes, daemon=True).start()
 
     while True:
         command = input("Enter command (get, trust, list, lock, unlock, exit): ").strip()
