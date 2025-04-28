@@ -1,60 +1,33 @@
-# Peer-to-Peer File Sharing System
+# Secure P2P File Sharing System  
+**Direct device-to-device file transfers with end-to-end encryption**  
 
-This project is a peer-to-peer (P2P) system built in Python that allows devices to connect, recognize each other, and eventually share files directly — no central server required.
+##  Quick Start  
+1. Install:  
+```bash  
+git clone https://github.com/MikeTabbi/Comp-Network-Group-6.git
+cd Comp-Network-Group-6 
+pip install cryptography
+```  
+Start a peer:
 
-We’re building it piece by piece with the goal of having a fully functioning, secure, and efficient file-sharing network by the end of the project.
 
----
+```bash
+python P2PDraft.py  
+# Enter a unique peer ID when prompted 
+```  
+First-time setup:
 
-## What It Does (Right Now)
-
-- Devices can connect to a central node (server) to register their presence
-- The server keeps track of all active peers
-- New peers receive a list of connected devices
-- A detailed README (this file) explains how to run and understand the system
-
----
-
-## How It Works
-
-- A device sends a POST request to the server at `/register` with a unique `device_id`
-- If the ID isn’t already in the peer table, the server adds it
-- The server then responds with the current list of connected peers
-
----
-
-## How to Run It
-
-1. Open GitHub Codespaces or your terminal.
-2. Run the server:
-   ```bash
-   python server.py
-Open a new terminal tab and run the client:
-
-bash
-Copy
-Edit
-python device.py
-To test with more devices:
-
-Change the device_id in device.py
-
-Run it again to simulate another peer
-
-Example Output
-json
-Copy
-Edit
-{
-  "message": "Device registered successfully.",
-  "peers": ["device_001", "device_002"]
-}
-Tech Stack
-Python 3
-
-Flask
+```bash
+trust friend_peer_id friend_public_key.pem  # Add trusted peer  
+lock secret_file.txt myPassword123!         # Password-protect file
+```
+Share files:
+```bash
+get 192.168.1.15 friend_peer_id secret_file.txt  # Download from peer  
+```
 
 Requests
+```
  Project User Stories
 We’re building the project based on these 10 user stories. The goal is to fully implement each one by the time the project is complete:
 
@@ -97,7 +70,7 @@ Build a UI or command-line interaction system
 
 Improve error handling and add real-time updates
 
-
+```
 
 
 P2P FSM Diagram
